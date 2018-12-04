@@ -5,7 +5,7 @@
 #include "imperialfleet.h"
 #include <tuple>
 #include <vector>
-#include <cmath>
+#include <iostream>
 
 template<typename T, T t0, T t1, typename... S>
 class SpaceBattle {
@@ -23,12 +23,10 @@ public:
 			currentIndex++;
 		}
 		static_assert(t0 <= t1 && t1 > 0, "Niepoprawne czasy bitwy.");
-		cout << "Total ships in battle: " << sizeof...(S) << " ci: " << 
-			currentIndex << "/" << attackTimes.size() << endl;
 		static_assert(attackTimes[0] == 1, "attackTimes not calculated at compilation time");
 	}
 
-	size_t countImperialFleet() const {
+	size_t countImperialFleet() {
 		size_t result = 0;
 		for_each_in_tuple(ships, [&](const auto &ship) {
 			if (is_imperial<decltype(ship)>::res && ship.getShield() > 0) {
@@ -38,7 +36,7 @@ public:
 		return result;
 	}
 
-	size_t countRebelFleet() const {
+	size_t countRebelFleet() {
 		size_t result = 0;
 		for_each_in_tuple(ships, [&](const auto &ship) {
 			if (is_rebel<decltype(ship)>::res && ship.getShield() > 0) {
@@ -49,32 +47,36 @@ public:
 	}
 
 	void tick(T timeStep) {
-		cout << "tick @" << time << " o " << timeStep << " ci: " << 
-			currentIndex << endl;
-		while (currentIndex < attackTimes.size() && 
-			attackTimes[currentIndex] < time)
-		{ currentIndex++; }
+		size_t imp = countImperialFleet(), reb = countRebelFleet();
+		if (!imp && !reb) {
+			std::cout << "DRAW" << std::endl;
+		} else if (!imp) {
+			std::cout << "REBELLION WON" << std::endl;
+		} else if (!reb) {
+			std::cout << "IMPERIUM WON" << std::endl;
+		} else {
+			while (currentIndex < attackTimes.size() && 
+				attackTimes[currentIndex] < time)
+			{ currentIndex++; }
 
-		if (currentIndex < attackTimes.size() && 
-			attackTimes[currentIndex] == time)
-		{ attack(); }
+			if (currentIndex < attackTimes.size() && 
+				attackTimes[currentIndex] == time)
+			{ attack(); }
 
-		time += timeStep;
-		if (time > t1) {
-			time = 0;
-			currentIndex = 0;
+			time += timeStep;
+			if (time > t1) {
+				time = 0;
+				currentIndex = 0;
+			}
 		}
-
 	}
 
 private:
 	void attack() {
-		cout << "Walka!\n";
 		for_each_in_tuple(ships, [&](auto &i) {
 			if ((is_imperial<decltype(i)>::res) && i.getShield() > 0) {
 				for_each_in_tuple(ships, [&](auto &r) {
 					if(is_rebel<decltype(r)>::res && r.getShield() > 0) {
-						cout << "bija sie" << endl;
 						ImperialStarship<int>::attack<decltype(i), decltype(r)>(i, r);
 					}
 				});
@@ -100,13 +102,13 @@ private:
 	constexpr static std::array<T, arraySize> attackTimes = calculateAttackTimes();
 
 	template<class F, class...Ts, std::size_t...Is>
-	static void for_each_in_tuple(const std::tuple<Ts...> & tuple, F func, std::index_sequence<Is...>){
+	static void for_each_in_tuple(std::tuple<Ts...> & tuple, F func, std::index_sequence<Is...>){
 	    using expander = int[];
 	    (void)expander { 0, ((void)func(std::get<Is>(tuple)), 0)... };
 	}
 
 	template<class F, class...Ts>
-	static void for_each_in_tuple(const std::tuple<Ts...> & tuple, F func){
+	static void for_each_in_tuple(std::tuple<Ts...> & tuple, F func){
 	    for_each_in_tuple(tuple, func, std::make_index_sequence<sizeof...(Ts)>());
 	}
 };

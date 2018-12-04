@@ -1,9 +1,7 @@
 #ifndef __IMPERIALFLEET_H__
 #define __IMPERIALFLEET_H__
 #include "rebelfleet.h"
-
-#include <iostream>
-using namespace std;
+#include <stdexcept>
 
 template<typename U>
 class ImperialStarship {
@@ -15,21 +13,11 @@ public:
 	constexpr U getShield() const { return shield; }
 	constexpr U getAttackPower() const { return attackPower; }
 	constexpr void takeDamage(U damage) {
-		cout << "TakeDamage(" << damage << ") of " << typeid(decltype(*this)).name() << endl;
 		if (shield > damage)
 			shield -= damage;
 		else
 			shield = 0;
 	}
-
-
-
-	/*template <class... Args>
-	struct attack {
-		attack(Args...) {
-			cout << "bledna walka1" << endl;
-		};
-	};*/
 
 	template <class I, class R>
 	struct attack {
@@ -40,22 +28,18 @@ public:
 		}
 	};
 
-	template <class I, class R>
+	template <class... Args>
 	struct _attack {
-		_attack(const I&, const R&) {
-			cout << "bledna walka" << endl;
-		};
+		_attack(Args...) {};
 	};
 
 	template <class IU, class RU, bool aggressive, bool slow>
 	struct _attack<ImperialStarship<IU>&, RebelStarship<RU, aggressive, slow>&> {
 		constexpr _attack(ImperialStarship<IU> &i, RebelStarship<RU, true, slow> &r) {
-			cout << "walka obu" << endl;
 			r.takeDamage(i.getAttackPower());
 			i.takeDamage(r.getAttackPower());
 		}
 		constexpr _attack(ImperialStarship<IU> &i, RebelStarship<RU, false, slow> &r) {
-			cout << "walka ucieka" << endl;
 			r.takeDamage(i.getAttackPower());
 		}
 	};

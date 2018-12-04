@@ -3,6 +3,8 @@
 #include "battle.h"
 #include <cassert>
 
+using namespace std;
+
 
 int main () {	
     constexpr StarCruiser<unsigned> cruiser(1234, 100000, 11);
@@ -20,24 +22,14 @@ int main () {
 	// cout << x1.getAttackPower() << endl;
 	 auto battle = SpaceBattle<short, 1, 23,
                               DeathStar<long>,
-                              Explorer<int>
-                              // TIEFighter<unsigned>,
-                              // XWing<float>
-                              >
-                              (
-                              	deathStar,
-                                explorer
-                                // fighter,
-                                // xwing
-                              );
+                              Explorer<int>,
+                              TIEFighter<unsigned>,
+                              XWing<float>>(deathStar,
+                                            explorer,
+                                            fighter,
+                                            xwing);
 	cout << "Imperial: " << battle.countImperialFleet() << endl <<
 			"Rebel: " << battle.countRebelFleet() << endl;
-
-	// attack<XWing<uint>, DeathStar<uint>>(x1, ds);
-
-	// attack(deathStar, xwing);
-	// battle.attack();
-	// attack<DeathStar<uint>, Explo
 
     assert(battle.countRebelFleet() == 2);
     assert(battle.countImperialFleet() == 2);

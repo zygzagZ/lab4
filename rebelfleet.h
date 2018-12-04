@@ -1,8 +1,6 @@
 #ifndef __REBELFLEET_H__
 #define __REBELFLEET_H__
-
-#include <iostream>
-using namespace std;
+#include <stdexcept>
 
 namespace speed {
 	namespace slow {
@@ -48,7 +46,6 @@ public:
 	constexpr U getShield() const { return shield; }
 	constexpr U getSpeed() const { return speed; }
 	constexpr void takeDamage(U damage) {
-		cout << "TakeDamage(" << damage << ") of " << typeid(decltype(*this)).name() << endl;
 		if (shield > damage)
 			shield -= damage;
 		else
