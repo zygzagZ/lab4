@@ -20,7 +20,7 @@ class RebelStarship {
 	constexpr void checkSpeed() const {
 		if (slow ? (speed < speed::slow::min || speed > speed::slow::max) 
 				 : (speed < speed::min || speed > speed::max))
-			throw std::logic_error("Niepoprawna prędkość");
+			throw std::logic_error("Wrong speed");
 	}
 public:
 	using valueType = U;
@@ -47,7 +47,8 @@ public:
 
 	constexpr U getShield() const { return shield; }
 	constexpr U getSpeed() const { return speed; }
-	void takeDamage(U damage) {
+	constexpr void takeDamage(U damage) {
+		cout << "TakeDamage(" << damage << ") of " << typeid(decltype(*this)).name() << endl;
 		if (shield > damage)
 			shield -= damage;
 		else
@@ -65,12 +66,21 @@ template<typename U>
 using XWing = RebelStarship<U, true, false>;
 
 template <class...>
-struct is_rebel : std::false_type {
+struct is_rebel_ : std::false_type {
 	const static bool res = false;
 };
 template <class U, bool aggressive, bool slow>
-struct is_rebel<RebelStarship<U, aggressive, slow>> : std::true_type {
+struct is_rebel_<RebelStarship<U, aggressive, slow>> : std::true_type {
 	const static bool res = true;
+};
+
+template <class...>
+struct is_rebel : std::false_type {
+	const static bool res = false;
+};
+template <class T>
+struct is_rebel<T> : is_rebel_
+	<typename std::remove_cv<typename std::remove_reference<T>::type>::type> {
 };
 
 #endif
