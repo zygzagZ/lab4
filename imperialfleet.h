@@ -21,19 +21,20 @@ public:
 			shield = 0;
 	}
 
-	template <class...>
-	struct attack {};
-	template <class IU, class RU, bool aggressive, RU min_speed, RU max_speed>
-	struct attack<ImperialStarship<IU>, RebelStarship<RU, aggressive, min_speed, max_speed>> {
-		attack(ImperialStarship<IU> &i, RebelStarship<RU, true, min_speed, max_speed> &r) {
+	template <class... Args>
+	struct attack {
+		attack(Args...) {};
+	};
+	template <class IU, class RU, bool aggressive, bool slow>
+	struct attack<ImperialStarship<IU>, RebelStarship<RU, aggressive, slow>> {
+		attack(ImperialStarship<IU> &i, RebelStarship<RU, true, slow> &r) {
 			r.takeDamage(i.getAttackPower());
 			i.takeDamage(r.getAttackPower());
 		}
-		attack(ImperialStarship<IU> &i, RebelStarship<RU, false, min_speed, max_speed> &r) {
+		attack(ImperialStarship<IU> &i, RebelStarship<RU, false, slow> &r) {
 			r.takeDamage(i.getAttackPower());
 		}
 	};
-
 };
 
 template<typename U>
@@ -45,8 +46,18 @@ using ImperialDestroyer = ImperialStarship<U>;
 template<typename U>
 using TIEFighter = ImperialStarship<U>;
 
+template <class...>
+struct is_imperial : std::false_type {
+	const static bool res = false;
+};
+template <class... Args>
+struct is_imperial<ImperialStarship<Args...>> : std::true_type {
+	const static bool res = true;
+};
+
 template<typename I, typename R>
 inline void attack(I &imperialShip, R &rebelShip) {
+	static_assert(is_imperial<I>::res && is_rebel<R>::res, "Złe typy statków!");
 	ImperialStarship<int>::attack<I, R>(imperialShip, rebelShip);
 }
 

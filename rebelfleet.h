@@ -5,7 +5,7 @@
 using namespace std;
 
 namespace speed {
-	namespace StarCruiser {
+	namespace slow {
 		const int min = 99999;
 		const int max = 299795;
 	}
@@ -13,9 +13,15 @@ namespace speed {
 	const int max = 2997960;
 }
 
-template<typename U, bool aggressive, U min_speed, U max_speed>
+template<typename U, bool aggressive, bool slow>
 class RebelStarship {
 	U shield, speed, attackPower;
+
+	constexpr void checkSpeed() const {
+		if (slow ? (speed < speed::slow::min || speed > speed::slow::max) 
+				 : (speed < speed::min || speed > speed::max))
+			throw std::logic_error("Niepoprawna prędkość");
+	}
 public:
 	using valueType = U;
 
@@ -23,21 +29,18 @@ public:
 		: shield(_shield), speed(_speed), attackPower(0)
 	{
 		static_assert(!aggressive, "Aggressive and no attackPower given!");
-		if (_speed < min_speed || _speed > max_speed) {
-			throw std::logic_error("Niepoprawna prędkość");
-		}
+		checkSpeed();
+		
 	}
 
 	constexpr RebelStarship(U _shield, U _speed, U _attackPower) 
 		: shield(_shield), speed(_speed), attackPower(_attackPower)
 	{ 
 		static_assert(aggressive, "Not aggressive and attackPower given!");
-		if (_speed < min_speed || _speed > max_speed) {
-			throw std::logic_error("Niepoprawna prędkość");
-		}
+		checkSpeed();
 	}
 
-	U getAttackPower() const {
+	constexpr U getAttackPower() const {
 		static_assert(aggressive, "Not aggressive!");
 		return attackPower;
 	}
@@ -53,12 +56,21 @@ public:
 };
 
 template<typename U>
-using Explorer = RebelStarship<U, false, speed::min, speed::max>;
+using Explorer = RebelStarship<U, false, false>;
 
 template<typename U>
-using StarCruiser = RebelStarship<U, true, speed::StarCruiser::min, speed::StarCruiser::max>;
+using StarCruiser = RebelStarship<U, true, true>;
 
 template<typename U>
-using XWing = RebelStarship<U, true, speed::min, speed::max>;
+using XWing = RebelStarship<U, true, false>;
+
+template <class...>
+struct is_rebel : std::false_type {
+	const static bool res = false;
+};
+template <class U, bool aggressive, bool slow>
+struct is_rebel<RebelStarship<U, aggressive, slow>> : std::true_type {
+	const static bool res = true;
+};
 
 #endif
